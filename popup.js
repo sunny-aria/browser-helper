@@ -3,7 +3,7 @@
 (function() {
   'use strict';
 
-  var currentTool = 'tab-manager';
+  var currentTool = '';
   var toolInitialized = { 'tab-manager': false, 'json-formatter': false };
 
   // ===== Theme =====
