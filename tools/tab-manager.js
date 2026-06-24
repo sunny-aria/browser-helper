@@ -221,10 +221,26 @@ const TabManager = (function() {
     for(var i=0;i<groups.length;i++){ collapsedGroups.add(groups[i].dataset.domain); groups[i].classList.add("collapsed"); }
   }
 
+  // ----- Safe remove: switch away from active tab before closing -----
+  // This prevents Chrome from auto-closing the popup when the active tab is removed
+  async function safeRemove(ids){
+    var idList = Array.isArray(ids) ? ids : [ids];
+    if(!chrome||!chrome.tabs) return;
+    var remaining = allTabs.filter(function(t){ return idList.indexOf(t.id) < 0; });
+    if(remaining.length === 0){
+      // All tabs are being closed — spawn a blank one first to keep popup alive
+      await chrome.tabs.create({ url: 'about:blank' });
+    } else if(idList.indexOf(activeTabId) >= 0){
+      // Active tab is being removed — switch to another tab first
+      await chrome.tabs.update(remaining[0].id, { active: true });
+    }
+    await chrome.tabs.remove(idList);
+  }
+
   // Actions
   async function closeTab(tabId){
     try{
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(tabId);
+      await safeRemove(tabId);
       selectedTabIds.delete(tabId);
       allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭标签页");
@@ -235,7 +251,7 @@ const TabManager = (function() {
     var ids=tabs.map(function(t){return t.id;});
     if(ids.length>1 && !confirm("确定要关闭 "+domain+" 下的 "+ids.length+" 个标签页吗？")) return;
     try{
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(ids);
+      await safeRemove(ids);
       ids.forEach(function(id){selectedTabIds.delete(id);});
       allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭 "+domain+" 的 "+ids.length+" 个标签页");
@@ -247,7 +263,7 @@ const TabManager = (function() {
     if(!confirm("确定要关闭全部 "+allTabs.length+" 个标签页吗？")) return;
     try{
       var ids=allTabs.map(function(t){return t.id;});
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(ids);
+      await safeRemove(ids);
       allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭全部标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
@@ -259,7 +275,7 @@ const TabManager = (function() {
     if(others.length===0){showToast("没有其他标签页可关闭");return;}
     if(!confirm("确定要关闭其他 "+others.length+" 个标签页吗？")) return;
     try{
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(others.map(function(t){return t.id;}));
+      await safeRemove(others.map(function(t){return t.id;}));
       allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭其他标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
@@ -278,9 +294,20 @@ const TabManager = (function() {
     if(dup.length===0){showToast("没有发现重复标签页");return;}
     if(!confirm("发现 "+dup.length+" 个重复标签页，确定要关闭吗？")) return;
     try{
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(dup);
+      await safeRemove(dup);
       allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭重复标签页");
+    }catch(e){showToast("关闭失败: "+e.message,"error");}
+  }
+
+  async function closeSelected(){
+    if(selectedTabIds.size===0){showToast("请先选择标签页");return;}
+    var ids=Array.from(selectedTabIds);
+    try{
+      await safeRemove(ids);
+      selectedTabIds.clear();
+      allTabs=await chrome.tabs.query({currentWindow:true});
+      render(); showToast("已关闭选中的标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
 
@@ -296,17 +323,6 @@ const TabManager = (function() {
       }
       showToast("已收藏 "+saved+" 个标签页");
     }catch(e){showToast("收藏失败: "+e.message,"error");}
-  }
-
-  async function closeSelected(){
-    if(selectedTabIds.size===0){showToast("请先选择标签页");return;}
-    var ids=Array.from(selectedTabIds);
-    try{
-      if(chrome&&chrome.tabs) await chrome.tabs.remove(ids);
-      selectedTabIds.clear();
-      allTabs=await chrome.tabs.query({currentWindow:true});
-      render(); showToast("已关闭选中的标签页");
-    }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
 
   async function bookmarkSelected(){
@@ -340,11 +356,9 @@ const TabManager = (function() {
 
   // Init
   function bindUI(){
-    // Search
     var si=document.getElementById("search-input");
     if(si) si.addEventListener("input", function(){ searchQuery=si.value; renderList(); });
 
-    // Quick actions
     var qas=document.querySelectorAll("#quick-actions .qa-btn");
     for(var i=0;i<qas.length;i++){
       qas[i].addEventListener("click", function(){
@@ -355,7 +369,6 @@ const TabManager = (function() {
       });
     }
 
-    // View toggle
     var vbs=document.querySelectorAll("#view-toggle .view-btn");
     for(var i=0;i<vbs.length;i++){
       vbs[i].addEventListener("click", function(){
@@ -364,7 +377,6 @@ const TabManager = (function() {
       });
     }
 
-    // Sort
     var sortBtns=document.querySelectorAll("#sort-actions .sort-btn");
     for(var i=0;i<sortBtns.length;i++){
       sortBtns[i].addEventListener("click", function(){
@@ -373,19 +385,16 @@ const TabManager = (function() {
       });
     }
 
-    // Expand/collapse
     var ea=document.getElementById("expand-all");
     var ca=document.getElementById("collapse-all");
     if(ea) ea.addEventListener("click", expandAll);
     if(ca) ca.addEventListener("click", collapseAll);
 
-    // Bottom bar
     var cs=document.getElementById("close-sel");
     var bs=document.getElementById("bmk-sel");
     if(cs) cs.addEventListener("click", closeSelected);
     if(bs) bs.addEventListener("click", bookmarkSelected);
 
-    // Tab listeners
     if(chrome&&chrome.tabs){
       chrome.tabs.onRemoved.addListener(function(){
         chrome.tabs.query({currentWindow:true}).then(function(t){allTabs=t;render();});
