@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=780, initial-scale=1.0">
+<title>Browser Helper</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">BH</div>
+    <div class="sidebar-tools">
+      <button class="tool-btn active" data-tool="tab-manager" title="标签页管理">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="9" x2="9" y2="21"/>
+        </svg>
+        <span class="tool-label">标签</span>
+      </button>
+      <button class="tool-btn" data-tool="json-formatter" title="JSON 格式化">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M8 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h1"/>
+          <path d="M16 3h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-1"/>
+          <line x1="12" y1="3" x2="12" y2="21"/>
+        </svg>
+        <span class="tool-label">JSON</span>
+      </button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="theme-btn" id="themeToggle" title="切换主题">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Content Area -->
+  <main class="content" id="content">
+    <!-- Tab Manager Panel -->
+    <div class="tool-panel active" id="panel-tab-manager">
+      <!-- Header -->
+      <div class="tm-header">
+        <div class="tm-brand">
+          <div class="tm-logo">T</div>
+          <div>
+            <div class="tm-title">Tab管家</div>
+            <div class="tm-count" id="tab-count">0 个标签页</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="tm-search">
+        <div class="tm-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input id="search-input" placeholder="搜索标签页..." autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="tm-actions" id="quick-actions">
+        <button class="qa-btn" data-a="dup">
+          <svg width="13" height="13" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M2 10V3.5C2 2.7 2.7 2 3.5 2H10" stroke="currentColor" stroke-width="1.5"/></svg>
+          关重复
+        </button>
+        <button class="qa-btn" data-a="oth">
+          <svg width="13" height="13" viewBox="0 0 16 16"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          关其他
+        </button>
+        <button class="qa-btn" data-a="sel">
+          <svg width="13" height="13" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M6 8L7.5 10L10 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          关选中
+        </button>
+        <button class="qa-btn" data-a="bmk">
+          <svg width="13" height="13" viewBox="0 0 16 16"><path d="M4 2H12V14L8 11L4 14V2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/></svg>
+          收藏
+        </button>
+        <button class="qa-btn qa-danger" data-a="all">
+          <svg width="13" height="13" viewBox="0 0 16 16"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          全关闭
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="tm-filter" id="filter-bar">
+        <div class="tm-view-toggle" id="view-toggle">
+          <button class="view-btn active" data-v="group">分组</button>
+          <button class="view-btn" data-v="list">列表</button>
+        </div>
+        <div class="tm-expand">
+          <button id="expand-all">⊞ 展开</button>
+          <button id="collapse-all">⊟ 折叠</button>
+        </div>
+        <div class="tm-sort" id="sort-actions">
+          <button class="sort-btn active" data-s="domain">域名</button>
+          <button class="sort-btn" data-s="title">标题</button>
+          <button class="sort-btn" data-s="time">时间</button>
+        </div>
+      </div>
+
+      <!-- Tab List -->
+      <div class="tm-list" id="tab-list">
+        <div class="tm-loading">加载中...</div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="tm-bottom" id="bottom-bar" style="display:none">
+        <span id="sel-count">已选 0 个</span>
+        <div>
+          <button id="close-sel" class="btn-danger">关闭选中</button>
+          <button id="bmk-sel" class="btn-bookmark">收藏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON Formatter Panel -->
+    <div class="tool-panel" id="panel-json-formatter">
+      <div class="jf-header">
+        <div class="jf-brand">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="4" fill="var(--accent)"/>
+            <path d="M8 8h2v8H8V8zm6 0h2v8h-2V8z" fill="#fff"/>
+          </svg>
+          <span>JSON Formatter</span>
+        </div>
+        <div class="jf-status">
+          <span id="statusMsg" class="status-msg"></span>
+        </div>
+      </div>
+
+      <!-- Editor Area -->
+      <div class="jf-editor" id="editorContainer">
+        <div class="jf-panel jf-input" id="inputPanel">
+          <div class="jf-panel-hdr"><span>输入</span></div>
+          <textarea id="inputArea" placeholder="在此粘贴 JSON 或转义字符串..." spellcheck="false"></textarea>
+        </div>
+        <div class="jf-divider" id="divider">
+          <div class="jf-divider-handle"></div>
+        </div>
+        <div class="jf-panel jf-output" id="outputPanel">
+          <div class="jf-panel-hdr">
+            <span>输出</span>
+            <span class="jf-badge" id="statusBadge"></span>
+          </div>
+          <div class="jf-output-wrap">
+            <pre id="outputArea"><code id="outputCode"></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="jf-actions">
+        <button class="jf-btn primary" data-action="format">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h6"/></svg>
+          <span>格式化</span>
+        </button>
+        <button class="jf-btn" data-action="minify">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/></svg>
+          <span>压缩</span>
+        </button>
+        <button class="jf-btn" data-action="expand">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 17h16M4 12h16"/></svg>
+          <span>解压缩</span>
+        </button>
+        <button class="jf-btn" data-action="escape">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3l4 4-4 4"/><path d="M3 21l4-4-4-4"/></svg>
+          <span>转义</span>
+        </button>
+        <button class="jf-btn" data-action="unescape">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3L3 7l4 4"/><path d="M17 21l4-4-4-4"/></svg>
+          <span>去除转义</span>
+        </button>
+        <button class="jf-btn copy" id="copyBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>复制</span>
+        </button>
+        <button class="jf-btn sample" id="sampleBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <span>示例</span>
+        </button>
+        <button class="jf-btn clear" id="clearBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          <span>清空</span>
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="tools/tab-manager.js"></script>
+<script src="tools/json-formatter.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
