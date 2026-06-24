@@ -401,21 +401,25 @@ const TabManager = (function() {
     }
   }
 
-  async function loadData(){
-    if(!chrome||!chrome.tabs) throw new Error("Chrome API 不可用");
-    try{ var at=await chrome.tabs.query({active:true,currentWindow:true}); activeTabId=at[0]?at[0].id:null; }catch(e){}
-    allTabs = await chrome.tabs.query({currentWindow:true});
-    render();
+  function loadData(callback){
+    if(!chrome||!chrome.tabs){
+      throw new Error("Chrome API 不可用");
+    }
+    chrome.tabs.query({currentWindow:true}, function(tabs){
+      allTabs = tabs;
+      chrome.tabs.query({active:true,currentWindow:true}, function(at){
+        activeTabId = at[0] ? at[0].id : null;
+        try { render(); } catch(e) {}
+        if(callback) callback();
+      });
+    });
   }
 
   function init(){
     bindUI();
-    setTimeout(function(){
-      loadData().catch(function(e){
-        var el=document.getElementById("tab-list");
-        if(el) el.innerHTML='<div class="tm-loading" style="color:var(--danger)">加载失败: '+e.message+'</div>';
-      });
-    }, 0);
+    loadData(function(){
+      // data loaded
+    });
   }
 
   return { init: init };
