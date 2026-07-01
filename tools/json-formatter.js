@@ -451,6 +451,21 @@ const JSONFormatter = (function() {
         }
       });
 
+      // Auto-format on paste
+      inputArea.addEventListener('paste', function(e){
+        setTimeout(function(){
+          var input = inputArea.value.trim();
+          if (!input) return;
+          var t = input;
+          // Detect JSON-like content
+          if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']'))) {
+            try { formatJSON(input); } catch(e){}
+          } else if (t.startsWith('"')&&t.endsWith('"')) {
+            try { unescapeJSON(input); } catch(e){}
+          }
+        }, 50);
+      });
+
       // Auto-paste
       inputArea.addEventListener('focus', function(){
         if (!inputArea.value) {
@@ -460,7 +475,8 @@ const JSONFormatter = (function() {
                 var t = text.trim();
                 if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']')) || (t.startsWith('"')&&t.endsWith('"'))) {
                   inputArea.value = text;
-                  setStatus('已从剪贴板粘贴', 'success');
+                  setStatus('已粘贴并格式化', 'success');
+                  setTimeout(function(){ try { formatJSON(inputArea.value); } catch(e){} }, 50);
                 }
               }
             }).catch(function(){});

@@ -175,7 +175,6 @@ const TabManager = (function() {
         if(e.target.closest(".tm-cb")||e.target.closest(".tm-tab-close")) return;
         var tid=parseInt(e.currentTarget.dataset.tabId);
         if(chrome&&chrome.tabs) chrome.tabs.update(tid,{active:true});
-        window.close();
       });
     }
     var cbs=container.querySelectorAll(".tm-cb");
