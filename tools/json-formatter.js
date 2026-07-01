@@ -451,19 +451,16 @@ const JSONFormatter = (function() {
         }
       });
 
-      // Auto-format on paste
+      // Auto-format on paste: detect from clipboardData, format immediately
       inputArea.addEventListener('paste', function(e){
-        setTimeout(function(){
-          var input = inputArea.value.trim();
-          if (!input) return;
-          var t = input;
-          // Detect JSON-like content
-          if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']'))) {
-            try { formatJSON(input); } catch(e){}
-          } else if (t.startsWith('"')&&t.endsWith('"')) {
-            try { unescapeJSON(input); } catch(e){}
-          }
-        }, 50);
+        var text = (e.clipboardData || window.clipboardData).getData('text');
+        if (!text) return;
+        var t = text.trim();
+        if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']'))) {
+          try { formatJSON(t); } catch(e){}
+        } else if (t.startsWith('"')&&t.endsWith('"')) {
+          try { unescapeJSON(t); } catch(e){}
+        }
       });
 
       // Auto-paste
@@ -476,7 +473,10 @@ const JSONFormatter = (function() {
                 if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']')) || (t.startsWith('"')&&t.endsWith('"'))) {
                   inputArea.value = text;
                   setStatus('已粘贴并格式化', 'success');
-                  setTimeout(function(){ try { formatJSON(inputArea.value); } catch(e){} }, 50);
+                  var pasteText = text.trim();
+                  if ((pasteText.startsWith('{')&&pasteText.endsWith('}')) || (pasteText.startsWith('[')&&pasteText.endsWith(']'))) {
+                    try { formatJSON(pasteText); } catch(e){}
+                  }
                 }
               }
             }).catch(function(){});
