@@ -457,9 +457,9 @@ const JSONFormatter = (function() {
         if (!text) return;
         var t = text.trim();
         if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']'))) {
-          try { formatJSON(t); } catch(e){}
+          try { formatJSON(t); } catch(err){ setStatus('格式化失败: '+err.message, 'error'); }
         } else if (t.startsWith('"')&&t.endsWith('"')) {
-          try { unescapeJSON(t); } catch(e){}
+          try { unescapeJSON(t); } catch(err){ setStatus('转义还原失败: '+err.message, 'error'); }
         }
       });
 
