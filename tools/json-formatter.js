@@ -462,26 +462,6 @@ const JSONFormatter = (function() {
         }
       });
 
-      // Auto-paste
-      inputArea.addEventListener('focus', function(){
-        if (!inputArea.value) {
-          try {
-            navigator.clipboard.readText().then(function(text){
-              if (text && !inputArea.value) {
-                var t = text.trim();
-                if ((t.startsWith('{')&&t.endsWith('}')) || (t.startsWith('[')&&t.endsWith(']')) || (t.startsWith('"')&&t.endsWith('"'))) {
-                  inputArea.value = text;
-                  setStatus('已粘贴并格式化', 'success');
-                  var pasteText = text.trim();
-                  if ((pasteText.startsWith('{')&&pasteText.endsWith('}')) || (pasteText.startsWith('[')&&pasteText.endsWith(']'))) {
-                    try { formatJSON(pasteText); } catch(e){}
-                  }
-                }
-              }
-            }).catch(function(){});
-          } catch(e) {}
-        }
-      });
     }
 
     // Divider
