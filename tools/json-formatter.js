@@ -410,7 +410,6 @@ const JSONFormatter = (function() {
         lastFormattedJson = '';
         setBadge('', ''); setStatus('');
         showToast('已清空', 'success');
-        inputArea.focus();
       });
     }
 
