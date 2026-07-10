@@ -590,3 +590,101 @@ input { font: inherit; border: none; outline: none; background: none; color: inh
   to { opacity: 1; transform: translateY(0); }
 }
 #outputCode { animation: fadeIn 0.2s ease; }
+
+/* ========== Java Prompts Panel ========== */
+.jp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; transition: border 0.2s;
+}
+.jp-brand { display: flex; align-items: center; gap: 8px; }
+.jp-logo {
+  width: 28px; height: 28px; background: var(--accent); color: #fff;
+  font-size: 14px; font-weight: 800; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.jp-title { font-size: 14px; font-weight: 700; }
+.jp-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+/* Search */
+.jp-search {
+  display: flex; align-items: center; gap: 6px; height: 32px;
+  margin: 8px 14px; padding: 0 10px;
+  background: var(--bg-tertiary); border-radius: 5px;
+  color: var(--text-muted); transition: background 0.2s;
+}
+.jp-search input { flex: 1; font-size: 13px; }
+.jp-search input::placeholder { color: var(--text-muted); }
+
+/* Category pills */
+.jp-cats {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 0 14px 8px; flex-shrink: 0;
+}
+.jp-cat {
+  border: 1px solid var(--border-color); background: var(--bg-tertiary);
+  border-radius: 999px; padding: 3px 10px; font-size: 12px;
+  cursor: pointer; color: var(--text-secondary); transition: all 0.15s;
+}
+.jp-cat:hover { background: var(--border-color); }
+.jp-cat.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* List */
+.jp-list {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 4px 14px 14px; background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color); transition: all 0.2s;
+}
+.jp-empty { text-align: center; color: var(--text-muted); padding: 24px; }
+
+/* Card */
+.jp-card {
+  background: var(--bg-primary); border: 1px solid var(--border-color);
+  border-radius: 8px; margin-bottom: 8px; overflow: hidden;
+  transition: all 0.2s;
+}
+.jp-card-head {
+  display: flex; justify-content: space-between; gap: 8px;
+  padding: 10px; cursor: pointer;
+}
+.jp-card-head:hover { background: var(--bg-secondary); }
+.jp-t-name { font-weight: 600; font-size: 13px; }
+.jp-t-desc { color: var(--text-secondary); margin: 2px 0 6px; line-height: 1.4; font-size: 12px; }
+.jp-t-vars { display: flex; flex-wrap: wrap; gap: 4px; }
+.jp-chip {
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 4px; padding: 1px 6px; font-size: 11px;
+}
+.jp-t-cat {
+  flex: none; color: var(--text-secondary); font-size: 11px;
+  background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;
+  align-self: flex-start; white-space: nowrap;
+}
+
+/* Detail */
+.jp-detail {
+  border-top: 1px solid var(--border-color); padding: 10px;
+  background: var(--bg-secondary);
+}
+.jp-sec { margin-bottom: 10px; }
+.jp-sec label {
+  font-weight: 600; font-size: 12px; color: var(--text-secondary);
+  display: block; margin-bottom: 4px;
+}
+.jp-sec pre {
+  white-space: pre-wrap; word-break: break-word;
+  background: var(--bg-input); border: 1px solid var(--border-color);
+  border-radius: 6px; padding: 8px; max-height: 200px; overflow: auto;
+  margin: 0 0 6px; font-size: 12px; line-height: 1.5;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  color: var(--text-primary);
+}
+.jp-copy {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px;
+  transition: all 0.15s;
+}
+.jp-copy:hover { background: var(--accent-hover); }
+.jp-copy.full { width: 100%; margin-top: 4px; background: var(--success); }
+.jp-copy.full:hover { background: #0ea271; }
+.jp-copy.copied { background: var(--success) !important; }

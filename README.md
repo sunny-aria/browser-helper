@@ -1,6 +1,6 @@
 # Browser Helper
 
-浏览器工具箱 —— 标签页管理 + JSON 格式化，一个 Chrome 扩展搞定。
+浏览器工具箱 —— 标签页管理 + JSON 格式化 + Java AI Prompt 库，一个 Chrome 扩展搞定。
 
 ## 功能
 
@@ -23,6 +23,15 @@
 - 智能修复：自动修复内嵌未转义引号等常见格式错误
 - 可拖拽分隔条：自由调整输入/输出面板比例
 - 自动粘贴：聚焦输入框时自动检测剪贴板 JSON
+
+### Java AI Prompt 库
+
+- 内置 10 个常用 Java 编码 AI 提示词（System / User 两段）
+- 覆盖：代码生成、代码评审、重构、单元测试、调试排障、代码解读、文档生成、MyBatis、性能优化、设计模式
+- 顶部搜索框按模板名 / 标签过滤
+- 分类胶囊快速切换（全部 / 各分类）
+- 点卡片展开查看 System 与 User 原文
+- 一键复制 System / User / 全文（System + User 合并）
 
 ### 通用特性
 
@@ -63,7 +72,8 @@ browser-helper/
 ├── icons/                     # 图标
 └── tools/
     ├── tab-manager.js         # 标签页管理模块
-    └── json-formatter.js      # JSON 格式化模块
+    ├── json-formatter.js      # JSON 格式化模块
+    └── java-prompts.js        # Java AI Prompt 库模块
 ```
 
 ## 技术栈

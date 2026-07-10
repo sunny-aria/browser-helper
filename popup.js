@@ -4,7 +4,7 @@
   'use strict';
 
   var currentTool = '';
-  var toolInitialized = { 'tab-manager': false, 'json-formatter': false };
+  var toolInitialized = { 'tab-manager': false, 'json-formatter': false, 'java-prompts': false };
 
   // ===== Theme =====
   function initTheme() {
@@ -64,6 +64,8 @@
         TabManager.init();
       } else if (toolName === 'json-formatter') {
         JSONFormatter.init();
+      } else if (toolName === 'java-prompts') {
+        JavaPrompts.init();
       }
       toolInitialized[toolName] = true;
     }
