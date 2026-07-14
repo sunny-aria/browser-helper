@@ -10,30 +10,6 @@ const TabManager = (function() {
   let currentView = "group";
   let sortMode = "domain";
   let collapsedGroups = new Set();
-  let targetWindowId = null;   // the user's browser window we manage (from ?win=)
-
-  // Resolve which window to manage from the URL (?win=<id>).
-  // Falls back to lastFocusedWindow when not provided.
-  function resolveTargetWindow() {
-    var m = (location.search || "").match(/[?&]win=(\d+)/);
-    targetWindowId = m ? parseInt(m[1], 10) : null;
-  }
-
-  function tabQueryP() {
-    var opt = targetWindowId != null ? { windowId: targetWindowId } : { lastFocusedWindow: true };
-    return new Promise(function(res) {
-      chrome.tabs.query(opt, function(tabs) { res(tabs || []); });
-    });
-  }
-
-  function activeQueryP() {
-    var opt = targetWindowId != null
-      ? { windowId: targetWindowId, active: true }
-      : { active: true, lastFocusedWindow: true };
-    return new Promise(function(res) {
-      chrome.tabs.query(opt, function(tabs) { res(tabs || []); });
-    });
-  }
 
   const DOMAIN_CFG = {
     "github.com":       ["#18191C","GH"],
@@ -245,13 +221,13 @@ const TabManager = (function() {
   }
 
   // ----- Safe remove: switch away from active tab before closing -----
-  // This prevents Chrome from auto-closing the UI when the active tab is removed
+  // This prevents Chrome from auto-closing the popup when the active tab is removed
   async function safeRemove(ids){
     var idList = Array.isArray(ids) ? ids : [ids];
     if(!chrome||!chrome.tabs) return;
     var remaining = allTabs.filter(function(t){ return idList.indexOf(t.id) < 0; });
     if(remaining.length === 0){
-      // All tabs are being closed — spawn a blank one first to keep things alive
+      // All tabs are being closed — spawn a blank one first to keep popup alive
       await chrome.tabs.create({ url: 'about:blank' });
     } else if(idList.indexOf(activeTabId) >= 0){
       // Active tab is being removed — switch to another tab first
@@ -265,7 +241,7 @@ const TabManager = (function() {
     try{
       await safeRemove(tabId);
       selectedTabIds.delete(tabId);
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -276,7 +252,7 @@ const TabManager = (function() {
     try{
       await safeRemove(ids);
       ids.forEach(function(id){selectedTabIds.delete(id);});
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭 "+domain+" 的 "+ids.length+" 个标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -287,7 +263,7 @@ const TabManager = (function() {
     try{
       var ids=allTabs.map(function(t){return t.id;});
       await safeRemove(ids);
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭全部标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -299,7 +275,7 @@ const TabManager = (function() {
     if(!confirm("确定要关闭其他 "+others.length+" 个标签页吗？")) return;
     try{
       await safeRemove(others.map(function(t){return t.id;}));
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭其他标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -318,7 +294,7 @@ const TabManager = (function() {
     if(!confirm("发现 "+dup.length+" 个重复标签页，确定要关闭吗？")) return;
     try{
       await safeRemove(dup);
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭重复标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -329,7 +305,7 @@ const TabManager = (function() {
     try{
       await safeRemove(ids);
       selectedTabIds.clear();
-      allTabs=await tabQueryP();
+      allTabs=await chrome.tabs.query({currentWindow:true});
       render(); showToast("已关闭选中的标签页");
     }catch(e){showToast("关闭失败: "+e.message,"error");}
   }
@@ -420,36 +396,37 @@ const TabManager = (function() {
 
     if(chrome&&chrome.tabs){
       chrome.tabs.onRemoved.addListener(function(){
-        tabQueryP().then(function(t){ allTabs=t; render(); });
+        chrome.tabs.query({currentWindow:true}).then(function(t){allTabs=t;render();});
       });
       chrome.tabs.onCreated.addListener(function(){
-        tabQueryP().then(function(t){ allTabs=t; render(); });
+        chrome.tabs.query({currentWindow:true}).then(function(t){allTabs=t;render();});
       });
-      chrome.tabs.onActivated.addListener(async function(){
-        var at = await activeQueryP();
-        activeTabId = at[0] ? at[0].id : activeTabId;
-        allTabs = await tabQueryP();
+      chrome.tabs.onActivated.addListener(async function(info){
+        activeTabId=info.tabId;
+        allTabs=await chrome.tabs.query({currentWindow:true});
         render();
       });
     }
   }
 
-  async function loadData(){
+  function loadData(callback){
     if(!chrome||!chrome.tabs){
       throw new Error("Chrome API 不可用");
     }
-    resolveTargetWindow();
-    allTabs = await tabQueryP();
-    var at = await activeQueryP();
-    activeTabId = at[0] ? at[0].id : (allTabs[0] ? allTabs[0].id : null);
-    render();
+    chrome.tabs.query({currentWindow:true}, function(tabs){
+      allTabs = tabs;
+      chrome.tabs.query({active:true,currentWindow:true}, function(at){
+        activeTabId = at[0] ? at[0].id : null;
+        try { render(); } catch(e) {}
+        if(callback) callback();
+      });
+    });
   }
 
   function init(){
     bindUI();
-    loadData().catch(function(e){
-      var el=document.getElementById("tab-list");
-      if(el) el.innerHTML='<div class="tm-loading" style="color:var(--danger)">加载失败: '+e.message+'</div>';
+    loadData(function(){
+      // data loaded
     });
   }
 
