@@ -1,9 +1,45 @@
 // ===== Browser Helper - Background Service Worker =====
 
-// Update badge showing tab count on extension icon
+// Open (or focus an existing) Browser Helper standalone window.
+// A standalone window is not auto-closed by Chrome when focus leaves it
+// (unlike a default_popup). We capture the user's current browser window id
+// and pass it via ?win= so the tab manager always targets the right window,
+// regardless of which window currently has focus.
+function openHelperWindow() {
+  chrome.windows.getLastFocused(function(focusedWin) {
+    var targetId = focusedWin ? focusedWin.id : null;
+    chrome.windows.getAll({ populate: true }, function(windows) {
+      var existing = windows.find(function(w) {
+        return w.type === "popup" &&
+          w.tabs &&
+          w.tabs.some(function(t) { return t.url && t.url.indexOf("popup.html") >= 0; });
+      });
+      if (existing) {
+        chrome.windows.update(existing.id, { focused: true });
+        return;
+      }
+      var url = chrome.runtime.getURL("popup.html");
+      if (targetId != null) url += "?win=" + targetId;
+      chrome.windows.create({
+        url: url,
+        type: "popup",
+        width: 780,
+        height: 640,
+        resizable: true
+      });
+    });
+  });
+}
+
+chrome.action.onClicked.addListener(openHelperWindow);
+
+// Update badge showing total tab count across normal browser windows
 function updateBadge() {
-  chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    const count = tabs.length;
+  chrome.windows.getAll({ populate: true }, function(wins) {
+    var count = 0;
+    wins.forEach(function(w) {
+      if (w.type === "normal" && w.tabs) count += w.tabs.length;
+    });
     if (count > 0) {
       chrome.action.setBadgeText({ text: String(count) });
       chrome.action.setBadgeBackgroundColor({ color: "#6366F1" });

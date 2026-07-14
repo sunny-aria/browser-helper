@@ -83,7 +83,7 @@
 
 body {
   width: 780px;
-  height: 560px;
+  height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
