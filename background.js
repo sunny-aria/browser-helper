@@ -204,10 +204,13 @@ async function getTenantToken(cfg) {
 }
 
 // 解析文档 id：
-// - 普通 docx 文档：URL 里的 token 即 document_id，可直接用
+// - 普通 docx 文档：支持直接粘贴「文档链接」或纯 token，统一提取为纯 document_id
 // - wiki 文档（/wiki/wikcn...）：必须先通过 wiki 接口解析出真实的 docx document_id
 async function resolveDocId(cfg, token) {
-  const t = (token || '').trim();
+  let t = (token || '').trim();
+  // 兼容直接粘贴文档链接：https://xxx.feishu.cn/docx/XXXX?xxx → 提取 XXXX
+  const dm = t.match(/\/docx\/([A-Za-z0-9]+)/i);
+  if (dm) t = dm[1];
   if (/wikcn/i.test(t) || /\/wiki\//i.test(t)) {
     const base = openApiBase(cfg.domain);
     const tk = await getTenantToken(cfg);
@@ -315,7 +318,7 @@ async function writeViaOpenAPI(cfg, docToken, content) {
         '③ 若是 wiki 文档：先在知识库空间「管理 → 成员与权限」把机器人加为协作者（至少阅读），再单独给该文档编辑权；\n' +
         '④ 加完协作者/权限后等十几秒再生效，然后重新点一次「诊断 → 测试写入」。';
     }
-    throw new Error('docs_ai 写入失败 (code=' + data.code + (data.msg ? ', msg=' + data.msg : '') + '):' + hint);
+    throw new Error('docs_ai 写入失败 (文档=' + documentId + ', code=' + data.code + (data.msg ? ', msg=' + data.msg : '') + '):' + hint);
   }
   return data;
 }
@@ -326,8 +329,9 @@ async function handleTest() {
   if (!cfg.docs.length) return { ok: false, error: '未配置目标文档，请先在「目标文档」添加' };
   const d = cfg.docs[0];
   try {
+    const documentId = await resolveDocId(cfg, d.token);
     await writeViaOpenAPI(cfg, d.token, '# 连接测试\n这是一条来自「飞书剪藏插件」的连接测试，若已出现在文档里说明配置正确。');
-    return { ok: true, name: d.name };
+    return { ok: true, name: d.name, docId: documentId };
   } catch (e) {
     return { ok: false, error: String(e) };
   }

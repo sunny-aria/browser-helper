@@ -134,7 +134,7 @@ const FeishuClipper = (function () {
           }
           if (resp && resp.ok) {
             r.style.color = '#2ecc71';
-            r.textContent = '✓ 测试写入成功（已写入「' + resp.name + '」），配置正确。';
+            r.textContent = '✓ 测试写入成功（已写入「' + resp.name + '」，文档id=' + (resp.docId || '') + '），配置正确。';
           } else {
             r.style.color = '#d83931';
             r.textContent = '✗ ' + ((resp && resp.error) || '未知错误');
