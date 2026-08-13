@@ -1,6 +1,6 @@
 # Browser Helper
 
-浏览器工具箱 —— 标签页管理 + JSON 格式化 + Java AI Prompt 库，一个 Chrome 扩展搞定。
+浏览器工具箱 —— 标签页管理 + JSON 格式化 + Java AI Prompt 库 + 飞书剪藏，一个 Chrome 扩展搞定。
 
 ## 功能
 
@@ -32,6 +32,20 @@
 - 分类胶囊快速切换（全部 / 各分类）
 - 点卡片展开查看 System 与 User 原文
 - 一键复制 System / User / 全文（System + User 合并）
+
+### 飞书剪藏
+
+- 在任意网页选中文字，选区旁出现工具条，可「整理并写入飞书」或「仅复制」
+- 调用大模型（OpenAI 兼容接口）整理选中的网页内容，再写入飞书文档
+- 飞书 OpenAPI 直连：填 App ID / App Secret 即可，浏览器内直接写入，无需本地桥接服务
+- 多文档支持：可配置多个目标文档，写入时逐个勾选
+- 自动附加来源链接与剪藏时间
+- 写入前预览确认：弹出版面浮层，可编辑内容、勾选目标文档后再写入
+- 仅复制：把（整理后的）内容复制到剪贴板，不写入飞书，无需飞书凭据也能用
+- 右键菜单「整理并写入飞书」亦可触发
+- 支持普通 docx 文档与 wiki 文档（`/wiki/...`，自动解析为真实 document_id）
+
+> 前置：在飞书开放平台创建应用，拿到 App ID / App Secret，并为应用申请 `docx:document` 权限（wiki 文档还需 `wiki:wiki`）。配置入口在侧边栏「剪藏」面板。
 
 ### 通用特性
 
@@ -65,7 +79,7 @@
 ```
 browser-helper/
 ├── manifest.json              # 扩展配置
-├── background.js              # Service Worker（标签计数徽章）
+├── background.js              # Service Worker（标签徽章 + 飞书剪藏 PREVIEW/WRITE/OpenAPI）
 ├── popup.html                 # 主界面
 ├── popup.css                  # 样式
 ├── popup.js                   # 主控制器（工具切换/主题）
@@ -73,7 +87,9 @@ browser-helper/
 └── tools/
     ├── tab-manager.js         # 标签页管理模块
     ├── json-formatter.js      # JSON 格式化模块
-    └── java-prompts.js        # Java AI Prompt 库模块
+    ├── java-prompts.js        # Java AI Prompt 库模块
+    ├── feishu-clipper.js      # 飞书剪藏配置面板模块
+    └── feishu-content.js      # 飞书剪藏 content script（选区工具条 + 预览浮层）
 ```
 
 ## 技术栈

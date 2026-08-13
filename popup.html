@@ -36,6 +36,13 @@
         </svg>
         <span class="tool-label">Java</span>
       </button>
+      <button class="tool-btn" data-tool="feishu-clipper" title="飞书剪藏">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 4h7a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2z"/>
+          <path d="M9 4v14l3 2 3-2"/>
+        </svg>
+        <span class="tool-label">剪藏</span>
+      </button>
     </div>
     <div class="sidebar-bottom">
       <button class="theme-btn" id="themeToggle" title="切换主题">
@@ -218,6 +225,104 @@
       <nav id="jp-cats" class="jp-cats"></nav>
       <main id="jp-list" class="jp-list"></main>
     </div>
+
+    <!-- Feishu Clipper Panel -->
+    <div class="tool-panel" id="panel-feishu-clipper">
+      <div class="fs-header">
+        <div class="fs-brand">
+          <div class="fs-logo">✦</div>
+          <div>
+            <div class="fs-title">飞书剪藏</div>
+            <div class="fs-sub">选网页文字 → 整理 → 写入飞书文档</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fs-body">
+        <div class="fs-card">
+          <div class="fs-card-head">
+            <h3>大模型整理</h3>
+            <label class="fs-switch">
+              <input type="checkbox" id="fs-llmEnabled">
+              <span>启用整理</span>
+            </label>
+          </div>
+          <p class="fs-hint">关闭则直接写入原文；开启后先经大模型润色再写入。</p>
+
+          <div class="fs-form-group">
+            <label for="fs-llmApiKey">API Key</label>
+            <input id="fs-llmApiKey" type="password" placeholder="sk-...">
+          </div>
+          <div class="fs-form-grid">
+            <div class="fs-form-group">
+              <label for="fs-llmBaseUrl">Base URL</label>
+              <input id="fs-llmBaseUrl" placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="fs-form-group">
+              <label for="fs-llmModel">模型</label>
+              <input id="fs-llmModel" placeholder="gpt-4o-mini">
+            </div>
+          </div>
+          <div class="fs-form-group">
+            <label for="fs-llmPrompt">整理提示词</label>
+            <textarea id="fs-llmPrompt" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="fs-card">
+          <h3>飞书凭据</h3>
+          <p class="fs-hint">应用需具备 <code>docx:document</code> 权限，在「凭证与基础信息」获取。</p>
+          <div class="fs-form-grid">
+            <div class="fs-form-group">
+              <label for="fs-appId">App ID</label>
+              <input id="fs-appId" placeholder="cli_xxxxxxxx">
+            </div>
+            <div class="fs-form-group">
+              <label for="fs-appSecret">App Secret</label>
+              <input id="fs-appSecret" type="password" placeholder="xxxxxxxx">
+            </div>
+          </div>
+          <div class="fs-form-group">
+            <label for="fs-domain">开放平台域名</label>
+            <select id="fs-domain">
+              <option value="feishu.cn">open.feishu.cn</option>
+              <option value="larksuite.com">open.larksuite.com</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fs-card">
+          <div class="fs-card-head">
+            <h3>目标文档</h3>
+            <label class="fs-switch">
+              <input type="checkbox" id="fs-addTime">
+              <span>附加剪藏时间</span>
+            </label>
+          </div>
+          <div id="fs-docList"></div>
+          <div class="fs-addrow">
+            <input id="fs-docName" placeholder="名称，如 收藏夹">
+            <input id="fs-docUrl" placeholder="文档链接或 token">
+            <button id="fs-addDoc">添加</button>
+          </div>
+          <p class="fs-hint">可添加多个文档，写入时逐个勾选；自动附加来源链接与剪藏时间。</p>
+        </div>
+
+        <div class="fs-card fs-card-diag">
+          <h3>诊断</h3>
+          <div class="fs-diag-row">
+            <button id="fs-testWrite" class="fs-btn-secondary">测试写入（向首个文档写一条测试内容）</button>
+            <div id="fs-testResult" class="fs-test-result"></div>
+          </div>
+          <p class="fs-hint">若报错，复制下方红字反馈。常见原因：未填 App ID/Secret、应用缺 docx:document 权限、机器人未加入文档协作者。</p>
+        </div>
+
+        <div class="fs-footer-actions">
+          <button id="fs-save" class="fs-btn-primary">保存设置</button>
+          <div id="fs-status"></div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -227,6 +332,7 @@
 <script src="tools/tab-manager.js"></script>
 <script src="tools/json-formatter.js"></script>
 <script src="tools/java-prompts.js"></script>
+<script src="tools/feishu-clipper.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

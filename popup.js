@@ -4,7 +4,7 @@
   'use strict';
 
   var currentTool = '';
-  var toolInitialized = { 'tab-manager': false, 'json-formatter': false, 'java-prompts': false };
+  var toolInitialized = { 'tab-manager': false, 'json-formatter': false, 'java-prompts': false, 'feishu-clipper': false };
 
   // ===== Theme =====
   function initTheme() {
@@ -66,6 +66,8 @@
         JSONFormatter.init();
       } else if (toolName === 'java-prompts') {
         JavaPrompts.init();
+      } else if (toolName === 'feishu-clipper') {
+        FeishuClipper.init();
       }
       toolInitialized[toolName] = true;
     }
