@@ -70,18 +70,29 @@
       if (cb) cb({ ok: false, error: '扩展未就绪：请在 chrome://extensions 重新加载扩展，并刷新本网页标签页后重试' });
       return;
     }
-    try {
-      chrome.runtime.sendMessage(msg, (resp) => {
-        if (chrome.runtime.lastError) {
-          if (cb) cb({ ok: false, error: '发送失败：' + chrome.runtime.lastError.message });
-          return;
-        }
-        if (cb) cb(resp);
-      });
-    } catch (e) {
-      console.warn('[飞书剪藏] 发送消息时扩展上下文已失效：', e);
-      if (cb) cb({ ok: false, error: '扩展上下文已失效，请刷新本网页标签页后重试' });
-    }
+    let tries = 0;
+    const attempt = () => {
+      tries += 1;
+      try {
+        chrome.runtime.sendMessage(msg, (resp) => {
+          const err = chrome.runtime.lastError;
+          // MV3 service worker 空闲终止后，第一次 sendMessage 常因端口抢建失败报此错，重试唤醒即可
+          if (err && /Receiving end does not exist/i.test(err.message || '') && tries < 3) {
+            setTimeout(attempt, 150 * tries);
+            return;
+          }
+          if (err) {
+            if (cb) cb({ ok: false, error: '发送失败：' + err.message });
+            return;
+          }
+          if (cb) cb(resp);
+        });
+      } catch (e) {
+        console.warn('[飞书剪藏] 发送消息时扩展上下文已失效：', e);
+        if (cb) cb({ ok: false, error: '扩展上下文已失效，请刷新本网页标签页后重试' });
+      }
+    };
+    attempt();
   }
 
   function doPreview(text, pageUrl, pageTitle) {

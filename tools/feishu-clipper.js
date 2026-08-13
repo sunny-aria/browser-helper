@@ -126,10 +126,10 @@ const FeishuClipper = (function () {
         const r = $('fs-testResult');
         r.textContent = '测试中…';
         r.style.color = '#646a73';
-        chrome.runtime.sendMessage({ type: 'TEST_WRITE' }, (resp) => {
-          if (chrome.runtime.lastError) {
+        sendToBackground({ type: 'TEST_WRITE' }, (resp) => {
+          if (!resp || resp.ok === false) {
             r.style.color = '#d83931';
-            r.textContent = '发送失败：' + chrome.runtime.lastError.message;
+            r.textContent = '✗ ' + ((resp && resp.error) || '发送失败：后台未响应');
             return;
           }
           if (resp && resp.ok) {
@@ -142,6 +142,28 @@ const FeishuClipper = (function () {
         });
       });
     }
+  }
+
+  // MV3 service worker 空闲会被终止，popup 首次 sendMessage 可能因端口抢建失败而报
+  // "Receiving end does not exist"。遇到该错误自动重试唤醒后台（最多 3 次）。
+  function sendToBackground(msg, cb) {
+    let tries = 0;
+    const attempt = () => {
+      tries += 1;
+      chrome.runtime.sendMessage(msg, (resp) => {
+        const err = chrome.runtime.lastError;
+        if (err && /Receiving end does not exist/i.test(err.message || '') && tries < 3) {
+          setTimeout(attempt, 150 * tries);
+          return;
+        }
+        if (err) {
+          if (cb) cb({ ok: false, error: '发送失败：' + err.message });
+          return;
+        }
+        if (cb) cb(resp);
+      });
+    };
+    attempt();
   }
 
   function init() {
