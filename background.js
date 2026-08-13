@@ -304,10 +304,16 @@ async function writeViaOpenAPI(cfg, docToken, content) {
   const data = await parseJson(r, 'docs_ai 写入');
   if (data.code !== 0) {
     let hint = '';
-    if (data.code === 131006 || data.code === 1254001 || String(data.code).startsWith('12540')) {
+    // 文档级权限错误（最常见）：用 tenant_access_token 写入时，"当前用户"是应用机器人本身，
+    // 它对该文档必须至少有「编辑」协作权限。仅开通开放平台 scope 不够，必须把它加为文档协作者。
+    if (data.code === 3380004 || data.code === 131006 || data.code === 1254001 || String(data.code).startsWith('12540')) {
       hint =
-        ' 这是权限错误：机器人没有该文档的写入权限。请打开目标飞书文档，点击右上角「··· → 添加协作者」，' +
-        '把本应用的机器人加入并赋予可编辑权限；wiki 文档则需先给机器人知识库空间的协作者权限，再单独给文档编辑权限。';
+        ' 这是权限错误，按下面逐条核对：\n' +
+        '① 开放平台后台为应用开通「docx:document」权限范围（wiki 文档还要加「wiki:wiki」只读），' +
+        '加完必须「发布新版本」并让管理员审批授权，否则 scope 不生效；\n' +
+        '② 打开目标飞书文档，点右上角「··· → 添加协作者」，搜索并加入本应用的「机器人」，赋予「可编辑」权限；\n' +
+        '③ 若是 wiki 文档：先在知识库空间「管理 → 成员与权限」把机器人加为协作者（至少阅读），再单独给该文档编辑权；\n' +
+        '④ 加完协作者/权限后等十几秒再生效，然后重新点一次「诊断 → 测试写入」。';
     }
     throw new Error('docs_ai 写入失败 (code=' + data.code + (data.msg ? ', msg=' + data.msg : '') + '):' + hint);
   }
