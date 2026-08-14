@@ -30,9 +30,7 @@
       </button>
       <button class="tool-btn" data-tool="java-prompts" title="Java Prompts">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/>
-          <path d="M17 9h2.5a2.5 2.5 0 0 1 0 5H17"/>
-          <path d="M7 3v2M11 3v2"/>
+          <path d="M12 2L14.5 9H22L16 13.5L18 21L12 16.5L6 21L8 13.5L2 9H9.5Z"/>
         </svg>
         <span class="tool-label">Java</span>
       </button>
@@ -211,19 +209,36 @@
     <div class="tool-panel" id="panel-java-prompts">
       <div class="jp-header">
         <div class="jp-brand">
-          <div class="jp-logo">J</div>
+          <div class="jp-logo">AI</div>
           <div>
             <div class="jp-title">Java AI Prompt 库</div>
-            <div class="jp-sub">常用 Java 编码提示词，一键复制</div>
+            <div class="jp-sub">常用 Java 编码提示词 · 设计模式速览</div>
           </div>
         </div>
+        <button id="jp-designBtn" class="jp-design-btn" title="查看 21 种 Agent 设计模式小白速览">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/></svg>
+          21 种 Agent 设计模式
+        </button>
       </div>
-      <div class="jp-search">
-        <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input id="jp-search" type="text" placeholder="搜索模板名 / 标签..." autocomplete="off" />
+
+      <!-- 模板列表视图 -->
+      <div id="jp-templates" class="jp-templates">
+        <div class="jp-search">
+          <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input id="jp-search" type="text" placeholder="搜索模板名 / 标签..." autocomplete="off" />
+        </div>
+        <nav id="jp-cats" class="jp-cats"></nav>
+        <main id="jp-list" class="jp-list"></main>
       </div>
-      <nav id="jp-cats" class="jp-cats"></nav>
-      <main id="jp-list" class="jp-list"></main>
+
+      <!-- 设计模式速览子视图（小模块） -->
+      <div id="jp-design-view" class="jp-design-view" hidden>
+        <div class="jp-design-bar">
+          <button id="jp-designBack" class="jp-design-back">← 返回</button>
+          <span class="jp-design-title">21 种 Agent 设计模式 · 小白速览</span>
+        </div>
+        <div id="jp-designList" class="jp-design-list"></div>
+      </div>
     </div>
 
     <!-- Feishu Clipper Panel -->
